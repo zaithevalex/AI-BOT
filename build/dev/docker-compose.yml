@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: BOOTBot_db
+      POSTGRES_USER: BOOTBot_user
+      POSTGRES_PASSWORD: BOOTBot_pass
+      POSTGRES_HOST_AUTH_METHOD: trust
