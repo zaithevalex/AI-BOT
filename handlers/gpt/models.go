@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"strings"
 )
 
 type Button struct {
@@ -11,10 +12,11 @@ type Button struct {
 	ButtonTag string
 }
 
-func AddCheckMark(ais []*Button, name string) int {
-	for index, ai := range ais {
-		if ai.Name == name {
-			ai.Name += "✅"
+func AddCheckMark(buttons []*Button, name string) int {
+	name = strings.Trim(name, " ")
+	for index, button := range buttons {
+		if button.Name == name {
+			button.Name += "✅"
 			return index
 		}
 	}
@@ -35,15 +37,6 @@ func InlineKeyboardMarkUpGenerate(buttons []*Button) models.InlineKeyboardMarkup
 
 	return models.InlineKeyboardMarkup{
 		InlineKeyboard: replyMarkup,
-	}
-}
-
-func SetButtonSelectionStatus(buttons []*Button, name string) {
-	for _, button := range buttons {
-		if button.Name == name {
-			button.Name += "✅"
-			return
-		}
 	}
 }
 

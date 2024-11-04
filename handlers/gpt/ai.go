@@ -50,7 +50,7 @@ func GPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		}
 	}
 
-	val, err := manage.GetParam(db, update.Message.Chat.ID, "subscribe_time")
+	val, err := manage.GetParam[int64](db, update.Message.Chat.ID, "subscribe_time")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -66,7 +66,7 @@ func GPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		}
 	}
 
-	val, err = manage.GetParam(db, update.Message.Chat.ID, "amount_requests")
+	val, err = manage.GetParam[int64](db, update.Message.Chat.ID, "amount_requests")
 	amountReqs := reflect.ValueOf(val).Int()
 	if amountReqs < 1 {
 		_, err = b.SendMessage(ctx, &bot.SendMessageParams{

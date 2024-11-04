@@ -5,8 +5,9 @@ import (
 	"context"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"reflect"
 )
+
+const errRepeatChoice = "bad request, Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
 
 func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	_, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
@@ -24,17 +25,17 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		chosenParam, err := manage.GetParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai")
-		if err != nil {
-			panic(err.Error())
-		}
-
 		ais := []*Button{
 			{Name: "GPT-3.5", ButtonTag: "button_pick_gpt35"},
 			{Name: "GPT-4", ButtonTag: "button_pick_gpt4"},
+			{Name: "🔙Назад", ButtonTag: "button_pick_gpt_back"},
 		}
 
-		AddCheckMark(ais, reflect.ValueOf(chosenParam).String())
+		chosenParam, err := manage.GetParam[string](db, update.CallbackQuery.Message.Message.Chat.ID, "ai")
+		if err != nil {
+			panic(err.Error())
+		}
+		AddCheckMark(ais, chosenParam)
 
 		_, err = b.EditMessageReplyMarkup(ctx, &bot.EditMessageReplyMarkupParams{
 			ChatID:      update.CallbackQuery.Message.Message.Chat.ID,
@@ -42,6 +43,9 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ReplyMarkup: InlineKeyboardMarkUpGenerate(ais),
 		})
 		if err != nil {
+			if err.Error() == errRepeatChoice {
+				break
+			}
 			panic(err.Error())
 		}
 		break
@@ -51,7 +55,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", 1)
+		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GPT35)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -68,6 +72,9 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ReplyMarkup: InlineKeyboardMarkUpGenerate(ais),
 		})
 		if err != nil {
+			if err.Error() == errRepeatChoice {
+				break
+			}
 			panic(err.Error())
 		}
 		break
@@ -77,14 +84,14 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", 2)
+		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GPT4)
 		if err != nil {
 			panic(err.Error())
 		}
 
 		ais := []*Button{
 			{Name: "GPT-3.5", ButtonTag: "button_pick_gpt35"},
-			{Name: "GPT-4", ButtonTag: "button_pick_gpt4"},
+			{Name: "GPT-4✅", ButtonTag: "button_pick_gpt4"},
 			{Name: "🔙Назад", ButtonTag: "button_pick_gpt_back"},
 		}
 
@@ -94,6 +101,9 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ReplyMarkup: InlineKeyboardMarkUpGenerate(ais),
 		})
 		if err != nil {
+			if err.Error() == errRepeatChoice {
+				break
+			}
 			panic(err.Error())
 		}
 		break
@@ -103,17 +113,17 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		chosenParam, err := manage.GetParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai")
+		chosenParam, err := manage.GetParam[string](db, update.CallbackQuery.Message.Message.Chat.ID, "ai")
 		if err != nil {
 			panic(err.Error())
 		}
 
 		ais := []*Button{
 			{Name: "GPT", ButtonTag: "button_pick_gpt"},
-			{Name: "GoogleAI✅", ButtonTag: "button_pick_gpt_back"},
+			{Name: "GoogleAI", ButtonTag: "button_pick_googleai"},
 		}
 
-		SetButtonSelectionStatus(ais, reflect.ValueOf(chosenParam).String())
+		AddCheckMark(ais, chosenParam)
 
 		_, err = b.EditMessageReplyMarkup(ctx, &bot.EditMessageReplyMarkupParams{
 			ChatID:      update.CallbackQuery.Message.Message.Chat.ID,
@@ -121,6 +131,9 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ReplyMarkup: InlineKeyboardMarkUpGenerate(ais),
 		})
 		if err != nil {
+			if err.Error() == errRepeatChoice {
+				break
+			}
 			panic(err.Error())
 		}
 		break
@@ -130,7 +143,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", 0)
+		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GoogleAI)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -146,6 +159,9 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ReplyMarkup: InlineKeyboardMarkUpGenerate(ais),
 		})
 		if err != nil {
+			if err.Error() == errRepeatChoice {
+				break
+			}
 			panic(err.Error())
 		}
 		break
@@ -167,6 +183,13 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			MessageID:   update.CallbackQuery.Message.Message.ID,
 			ReplyMarkup: InlineKeyboardMarkUpGenerate(aisPrices),
 		})
+		if err != nil {
+			if err.Error() == errRepeatChoice {
+				break
+			}
+			panic(err.Error())
+		}
+		break
 	default:
 		break
 	}

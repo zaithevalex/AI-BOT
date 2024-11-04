@@ -6,7 +6,6 @@ import (
 	"context"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"reflect"
 )
 
 func PickGPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
@@ -21,17 +20,16 @@ func PickGPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		panic(err.Error())
 	}
 
-	chosenParam, err := manage.GetParam(db, update.Message.Chat.ID, "ai")
+	ais := []*Button{
+		{Name: "GPT", ButtonTag: "button_pick_gpt"},
+		{Name: "GoogleAI", ButtonTag: "button_pick_googleai"},
+	}
+
+	chosenParam, err := manage.GetParam[string](db, update.Message.Chat.ID, "ai")
 	if err != nil {
 		panic(err.Error())
 	}
-
-	ais := []*Button{
-		{Name: "GoogleAI", ButtonTag: "button_pick_googleai"},
-		{Name: "GPT", ButtonTag: "button_pick_gpt"},
-	}
-
-	SetButtonSelectionStatus(ais, reflect.ValueOf(chosenParam).String())
+	AddCheckMark(ais, chosenParam)
 
 	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:      update.Message.Chat.ID,
