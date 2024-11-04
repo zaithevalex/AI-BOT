@@ -4,19 +4,29 @@ import (
 	"BOOT-BOT/db/timers"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"reflect"
 )
 
-const CreateTableUsersReq = `CREATE TABLE IF NOT EXISTS USERS(ID BIGINT PRIMARY KEY, AUTOPAYMENT BOOLEAN, AI CHARACTER(30), AMOUNT_REQUESTS BIGINT, SUBSCRIBE_TIME BIGINT);`
-const DefaultReqsPerWeek = 3
-const getParam = "select %s from users where id = %d;"
-const insertUser = `INSERT INTO USERS(ID,
-                  AUTOPAYMENT,
-                  AI,
-                  AMOUNT_REQUESTS,
-                  SUBSCRIBE_TIME) VALUES(%v, %v, '%v', %v, %v);`
+const CreateTableUsersSubscriptions = `CREATE TABLE IF NOT EXISTS SUBSCRIPTIONS(ID BIGINT, AUTOPAYMENT BOOLEAN, SUBSCRIPTION CHARACTER(30), AMOUNT_REQUESTS BIGINT, SUBSCRIBE_TIME BIGINT);`
+
+const CreateTableUsersReq = `CREATE TABLE IF NOT EXISTS USERS(ID BIGINT PRIMARY KEY, AI CHARACTER(30));`
+
+const insertUser = `INSERT INTO USERS(ID, AI) VALUES(%v, '%v');`
+
+const insertSubscription = `INSERT INTO SUBSCRIPTIONS(ID,
+                          AUTOPAYMENT,
+                          SUBSCRIPTION,
+                          AMOUNT_REQUESTS,
+                          SUBSCRIBE_TIME) VALUES(%v, %v, '%v', %v, %v);`
+
 const selectUser = `SELECT * FROM USERS WHERE ID = %d;`
-const updateUserParam = "update users set %s = '%v' where id = %d;"
+
+const GetUserParam = `select %s from users where id = %d;`
+
+const GetSubscriptionParam = `select %s from subscriptions where id = %d;`
+
+const UpdateUserParam = `update USERS set %s = '%v' where id = %d;`
+
+const UpdateUserSubscriptionParam = `update SUBSCRIPTIONS set %s = '%v' where id = %d;`
 
 const (
 	GoogleAI = "GoogleAI"
@@ -24,13 +34,27 @@ const (
 	GPT4     = "GPT-4"
 )
 
-func AddUser(db *sqlx.DB, id int64) error {
-	nextMonday := timers.StartWeekUpdate()
+const (
+	PayloadDefault = "sub_default"
+	Payload2Weeks  = "sub_2weeks"
+	Payload1Month  = "sub_1month"
+	Payload1Year   = "sub_1year"
+)
 
-	_, err := db.Query(fmt.Sprintf(insertUser, id, false, GoogleAI, DefaultReqsPerWeek, nextMonday))
+const DefaultReqsPerWeek = 3
+
+func AddUser(db *sqlx.DB, id int64) error {
+	_, err := db.Query(fmt.Sprintf(insertUser, id, GoogleAI))
 	if err != nil {
 		return err
 	}
+
+	nextMonday := timers.StartWeekUpdate()
+	_, err = db.Query(fmt.Sprintf(insertSubscription, id, false, PayloadDefault, DefaultReqsPerWeek, nextMonday))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -50,9 +74,9 @@ func CheckUser(db *sqlx.DB, id int64) (bool, error) {
 	return false, nil
 }
 
-func GetParam[T comparable](db *sqlx.DB, id int64, reqParam string) (T, error) {
+func GetParam[T comparable](db *sqlx.DB, query string, id int64, reqParam string) (T, error) {
 	var param T
-	err := db.Get(&param, fmt.Sprintf(getParam, reqParam, id))
+	err := db.Get(&param, fmt.Sprintf(query, reqParam, id))
 	if err != nil {
 		return param, err
 	}
@@ -60,12 +84,8 @@ func GetParam[T comparable](db *sqlx.DB, id int64, reqParam string) (T, error) {
 	return param, nil
 }
 
-func UpdateParam(db *sqlx.DB, id int64, reqParam string, newMeaning any) error {
-	if reflect.TypeOf(newMeaning) == reflect.TypeOf("") {
-
-	}
-
-	_, err := db.Query(fmt.Sprintf(updateUserParam, reqParam, newMeaning, id))
+func UpdateParam(db *sqlx.DB, query string, id int64, reqParam string, newMeaning any) error {
+	_, err := db.Query(fmt.Sprintf(query, reqParam, newMeaning, id))
 	if err != nil {
 		return err
 	}

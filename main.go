@@ -28,6 +28,10 @@ func main() {
 		panic(err.Error())
 	}
 
+	if _, err = db.Query(manage.CreateTableUsersSubscriptions); err != nil {
+		panic(err.Error())
+	}
+
 	opts := []bot.Option{
 		bot.WithDefaultHandler(ai.GPTHandler),
 		bot.WithCallbackQueryDataHandler("button", bot.MatchTypePrefix, ai.GeneralButtonHandler),

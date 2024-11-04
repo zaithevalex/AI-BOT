@@ -13,12 +13,6 @@ const (
 	subDesc         = "GPT3.5/GPT-4/GoogleAI\n✅ 100 запросов ежедневно\n✅ не нужно ждать, чтобы задать следующий вопрос\nСтоимость: \n💰 99 руб     - 2 недели\n💰 169 руб   - 1 месяц (экономия: 32%)\n💰 1599 руб - 1 год (экономия: 61%)"
 )
 
-const (
-	Payload2Weeks = "payload_2weeks"
-	Payload1Month = "payload_1month"
-	Payload1Year  = "payload_1year"
-)
-
 func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	_, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
 		CallbackQueryID: update.CallbackQuery.ID,
@@ -41,7 +35,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			{Name: "🔙Назад", ButtonTag: "button_pick_gpt_back"},
 		}
 
-		chosenParam, err := manage.GetParam[string](db, update.CallbackQuery.Message.Message.Chat.ID, "ai")
+		chosenParam, err := manage.GetParam[string](db, manage.GetUserParam, update.CallbackQuery.Message.Message.Chat.ID, "ai")
 		if err != nil {
 			panic(err.Error())
 		}
@@ -65,7 +59,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GPT35)
+		err = manage.UpdateParam(db, manage.UpdateUserParam, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GPT35)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -94,7 +88,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GPT4)
+		err = manage.UpdateParam(db, manage.UpdateUserParam, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GPT4)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -123,7 +117,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		chosenParam, err := manage.GetParam[string](db, update.CallbackQuery.Message.Message.Chat.ID, "ai")
+		chosenParam, err := manage.GetParam[string](db, manage.GetUserParam, update.CallbackQuery.Message.Message.Chat.ID, "ai")
 		if err != nil {
 			panic(err.Error())
 		}
@@ -153,7 +147,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			panic(err.Error())
 		}
 
-		err = manage.UpdateParam(db, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GoogleAI)
+		err = manage.UpdateParam(db, manage.UpdateUserParam, update.CallbackQuery.Message.Message.Chat.ID, "ai", manage.GoogleAI)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -205,7 +199,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ChatID:        update.CallbackQuery.Message.Message.Chat.ID,
 			Title:         "Подписка на 2 недели",
 			Description:   "Вы сможете отправлять неограниченное количество запросов, используя все виды AI в течение двух недель.",
-			Payload:       Payload2Weeks,
+			Payload:       manage.Payload2Weeks,
 			ProviderToken: paymentToken,
 			Currency:      "RUB",
 			Prices: []models.LabeledPrice{
@@ -221,7 +215,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ChatID:        update.CallbackQuery.Message.Message.Chat.ID,
 			Title:         "Подписка на 2 недели",
 			Description:   "Вы сможете отправлять неограниченное количество запросов, используя все виды AI в течение одного месяца.",
-			Payload:       Payload1Month,
+			Payload:       manage.Payload1Month,
 			ProviderToken: paymentToken,
 			Currency:      "RUB",
 			Prices: []models.LabeledPrice{
@@ -237,7 +231,7 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			ChatID:        update.CallbackQuery.Message.Message.Chat.ID,
 			Title:         "Подписка на 1 год",
 			Description:   "Вы сможете отправлять неограниченное количество запросов, используя все виды AI в течение одного года.",
-			Payload:       Payload1Year,
+			Payload:       manage.Payload1Year,
 			ProviderToken: paymentToken,
 			Currency:      "RUB",
 			Prices: []models.LabeledPrice{

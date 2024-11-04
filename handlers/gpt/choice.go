@@ -25,7 +25,7 @@ func PickGPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		{Name: "GoogleAI", ButtonTag: "button_pick_googleai"},
 	}
 
-	chosenParam, err := manage.GetParam[string](db, update.Message.Chat.ID, "ai")
+	chosenParam, err := manage.GetParam[string](db, manage.GetUserParam, update.Message.Chat.ID, "ai")
 	if err != nil {
 		panic(err.Error())
 	}
