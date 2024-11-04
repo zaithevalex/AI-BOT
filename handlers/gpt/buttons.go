@@ -7,7 +7,17 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-const errRepeatChoice = "bad request, Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
+const (
+	errRepeatChoice = "bad request, Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
+	paymentToken    = "381764678:TEST:99363"
+	subDesc         = "GPT3.5/GPT-4/GoogleAI\n✅ 100 запросов ежедневно\n✅ не нужно ждать, чтобы задать следующий вопрос\nСтоимость: \n💰 99 руб     - 2 недели\n💰 169 руб   - 1 месяц (экономия: 32%)\n💰 1599 руб - 1 год (экономия: 61%)"
+)
+
+const (
+	Payload2Weeks = "payload_2weeks"
+	Payload1Month = "payload_1month"
+	Payload1Year  = "payload_1year"
+)
 
 func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	_, err := b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
@@ -169,13 +179,13 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 		_, err = b.EditMessageText(ctx, &bot.EditMessageTextParams{
 			ChatID:    update.CallbackQuery.Message.Message.Chat.ID,
 			MessageID: update.CallbackQuery.Message.Message.ID,
-			Text:      "", // TODO
+			Text:      subDesc,
 		})
 
 		aisPrices := []*Button{
-			{Name: "GPT-3.5", ButtonTag: "button_get_subscribe_gpt4"},
-			{Name: "GPT-4", ButtonTag: "button_get_subscribe_gpt35"},
-			{Name: "GoogleAI", ButtonTag: "button_get_subscribe_googleai"},
+			{Name: "2 недели", ButtonTag: "button_get_subscribe_2weeks"},
+			{Name: "1 месяц", ButtonTag: "button_get_subscribe_1month"},
+			{Name: "1 год", ButtonTag: "button_get_subscribe_1year"},
 		}
 
 		_, err = b.EditMessageReplyMarkup(ctx, &bot.EditMessageReplyMarkupParams{
@@ -187,6 +197,54 @@ func GeneralButtonHandler(ctx context.Context, b *bot.Bot, update *models.Update
 			if err.Error() == errRepeatChoice {
 				break
 			}
+			panic(err.Error())
+		}
+		break
+	case "button_get_subscribe_2weeks":
+		_, err = b.SendInvoice(ctx, &bot.SendInvoiceParams{
+			ChatID:        update.CallbackQuery.Message.Message.Chat.ID,
+			Title:         "Подписка на 2 недели",
+			Description:   "Вы сможете отправлять неограниченное количество запросов, используя все виды AI в течение двух недель.",
+			Payload:       Payload2Weeks,
+			ProviderToken: paymentToken,
+			Currency:      "RUB",
+			Prices: []models.LabeledPrice{
+				{Label: "Подписка на 2 недели", Amount: 9900},
+			},
+		})
+		if err != nil {
+			panic(err.Error())
+		}
+		break
+	case "button_get_subscribe_1month":
+		_, err = b.SendInvoice(ctx, &bot.SendInvoiceParams{
+			ChatID:        update.CallbackQuery.Message.Message.Chat.ID,
+			Title:         "Подписка на 2 недели",
+			Description:   "Вы сможете отправлять неограниченное количество запросов, используя все виды AI в течение одного месяца.",
+			Payload:       Payload1Month,
+			ProviderToken: paymentToken,
+			Currency:      "RUB",
+			Prices: []models.LabeledPrice{
+				{Label: "Подписка на 1 месяц", Amount: 16900},
+			},
+		})
+		if err != nil {
+			panic(err.Error())
+		}
+		break
+	case "button_get_subscribe_1year":
+		_, err = b.SendInvoice(ctx, &bot.SendInvoiceParams{
+			ChatID:        update.CallbackQuery.Message.Message.Chat.ID,
+			Title:         "Подписка на 1 год",
+			Description:   "Вы сможете отправлять неограниченное количество запросов, используя все виды AI в течение одного года.",
+			Payload:       Payload1Year,
+			ProviderToken: paymentToken,
+			Currency:      "RUB",
+			Prices: []models.LabeledPrice{
+				{Label: "Подписка на 1 год", Amount: 159900},
+			},
+		})
+		if err != nil {
 			panic(err.Error())
 		}
 		break

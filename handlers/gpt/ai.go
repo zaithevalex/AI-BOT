@@ -10,6 +10,7 @@ import (
 	"github.com/go-telegram/bot/models"
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
+	"log"
 	"reflect"
 )
 
@@ -23,8 +24,6 @@ const (
 
 func GPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if update.PreCheckoutQuery != nil {
-		fmt.Printf("get PreCheckoutQuery for invoce payload: %s\n", update.PreCheckoutQuery.InvoicePayload)
-
 		b.AnswerPreCheckoutQuery(ctx, &bot.AnswerPreCheckoutQueryParams{
 			PreCheckoutQueryID: update.PreCheckoutQuery.ID,
 			OK:                 true,
@@ -41,12 +40,13 @@ func GPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	if update.Message != nil {
 		if update.Message.SuccessfulPayment != nil {
-			b.SendMessage(ctx, &bot.SendMessageParams{
-				ChatID:    update.Message.Chat.ID,
-				Text:      "Payment successful.",
-				ParseMode: models.ParseModeMarkdown,
-			})
-			return
+			if update.Message.SuccessfulPayment.InvoicePayload == Payload2Weeks {
+				log.Println(Payload2Weeks)
+			} else if update.Message.SuccessfulPayment.InvoicePayload == Payload1Month {
+				log.Println(Payload1Month)
+			} else if update.Message.SuccessfulPayment.InvoicePayload == Payload1Year {
+				log.Println(Payload1Year)
+			}
 		}
 	}
 
