@@ -20,7 +20,7 @@ func PickGPTHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		panic(err.Error())
 	}
 
-	ais := []*Button{
+	ais := []*Message{
 		{Name: "GPT", ButtonTag: "button_pick_gpt"},
 		{Name: "GoogleAI", ButtonTag: "button_pick_googleai"},
 	}
